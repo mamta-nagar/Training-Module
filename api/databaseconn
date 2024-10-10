@@ -1,0 +1,125 @@
+import mysql.connector
+from flask import Flask, request, jsonify
+
+# mydb=mysql.connector.connect(
+#     host="localhost",
+#     user="root",
+#     password="", 
+# )
+
+
+# mycursor.execute("CREATE DATABASE FirstDB")
+# mycursor.execute("SHOW DATABASES")
+# for i in mycursor:
+#     print(i)
+
+# mycursor=mydb.cursor()
+
+# mycursor.execute("CREATE TABLE tbl_users (us_id INT AUTO_INCREMENT PRIMARY kEY, us_name VARCHAR(255) NOT NULL, age INT NOT NULL)")
+# mycursor.execute("SHOW TABLES")
+# for a in mycursor:
+#     print(a)
+
+# print(mydb)
+
+# # WAY 1
+# sqlformula="INSERT INTO tbl_users(us_id, us_name, age) VALUES (%s, %s,%s)"
+# user1=(1,"John",21)
+# user2=(2,"Richael",24)
+# user3=(3,"Raj",25)
+# mycursor.execute(sqlformula, user1)
+# mycursor.execute(sqlformula, user2)
+# mycursor.execute(sqlformula, user3)
+
+# mycursor.execute("SELECT * FROM tbl_users")
+# myresult=mycursor.fetchone()
+# myresult=mycursor.fetchall()
+# for row in myresult:
+#     print(row)
+    
+# mydb.commit()
+
+mydb=mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="", 
+    database="firstdb"
+)
+
+
+mycursor=mydb.cursor()
+
+myapp=Flask(__name__)
+
+#GET operation ---> To RETRIVE DATA
+
+@myapp.route('/users/', methods=['GET'])
+def getUsers():
+    mycursor.execute("SELECT * FROM tbl_users")
+    users=mycursor.fetchall()
+    return jsonify(users)
+
+
+@myapp.route('/users/<int:user_id>', methods=['GET'])
+def getUser(user_id):
+    mycursor.execute("SELECT * FROM tbl_users WHERE us_id=%s",(user_id,))
+    user=mycursor.fetchone()
+    if user:
+        return jsonify(user)
+    else:
+        return jsonify({'error':'user not available'}), 404
+
+
+
+
+#POST operation ----> To SUBMIT/FEED DATA (CREATE USER)
+
+@myapp.route('/users', methods=['POST'])
+def createUser():
+    data=request.get_json()
+    username=data.get('username')
+    userage=data.get('age')
+    mycursor.execute("INSERT INTO tbl_users (us_name,age) VALUES (%s,%s)",(username,userage))
+    mydb.commit()
+    return jsonify({'message': 'User created successfully'}), 418
+
+
+
+
+# PUT ---> TO UPDATE 
+
+@myapp.route('/users/<int:user_id>', methods=['PUT'])
+def updateUser(user_id):
+    data = request.get_json()
+    username = data.get('username')
+    age = data.get('age')
+    mycursor.execute("UPDATE tbl_users SET us_name = %s, age = %s WHERE us_id = %s", (username, age, user_id))
+    mydb.commit()
+    return jsonify({'message': 'User updated successfully'})
+
+
+
+
+#DELETE ---> TO DELETE
+
+@myapp.route('/users/<int:user_id>', methods=['DELETE'])
+def deleteUser(user_id):
+    mycursor.execute("DELETE FROM tbl_users WHERE us_id = %s", (user_id,))
+    mydb.commit()
+    return jsonify({'message': 'User deleted successfully'})
+
+
+
+if __name__=="__main__":
+    myapp.run(debug=True)
+
+
+
+class Parent:
+    def __init__(self,name,age):
+        self.name=name
+        self.age=age
+    def printdetails():
+        print(self.name)
+
+p1=Parent("dee",45)
